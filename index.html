@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CleanText · Punctuation Normalizer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: "#EEF2FF",
+              100: "#E0E7FF",
+              500: "#6366F1", /* indigo-500 */
+              600: "#4F46E5", /* indigo-600 */
+              700: "#4338CA"  /* indigo-700 */
+            }
+          },
+          boxShadow: {
+            soft: "0 10px 35px rgba(2,6,23,0.08)"
+          },
+          backdropBlur: {
+            xs: "2px"
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="h-full bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 selection:bg-brand-100 selection:text-slate-900">
+  <div class="min-h-full relative overflow-hidden">
+    <!-- Decorative background blobs -->
+    <div aria-hidden="true" class="pointer-events-none absolute inset-0">
+      <div class="absolute -top-24 -left-20 h-72 w-72 rounded-full bg-indigo-400/20 blur-3xl"></div>
+      <div class="absolute -bottom-24 -right-20 h-72 w-72 rounded-full bg-sky-400/20 blur-3xl"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="sticky top-0 z-10 bg-white/70 dark:bg-slate-900/60 backdrop-blur md:backdrop-blur-sm border-b border-slate-200/70 dark:border-slate-800">
+      <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="relative">
+            <div class="h-9 w-9 rounded-xl bg-gradient-to-br from-brand-500 to-sky-500 shadow-soft"></div>
+            <span class="sr-only">CleanText</span>
+          </div>
+          <div>
+            <h1 class="text-lg font-semibold tracking-tight">CleanText</h1>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Normalize smart punctuation and odd spaces to standard text</p>
+          </div>
+        </div>
+        <button id="themeBtn" class="text-sm px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+          Toggle theme
+        </button>
+      </div>
+      <div class="h-1 bg-gradient-to-r from-brand-600 via-sky-500 to-brand-700"></div>
+    </header>
+
+    <!-- Main -->
+    <main class="max-w-6xl mx-auto px-4 py-8 md:py-12">
+      <div class="grid gap-6 md:grid-cols-2">
+        <!-- Input card -->
+        <section class="relative rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 shadow-soft">
+          <div class="p-4 md:p-6 flex items-center justify-between">
+            <h2 class="text-base font-medium">Input</h2>
+            <span id="inChars" class="text-xs text-slate-500 dark:text-slate-400">0 chars</span>
+          </div>
+          <div class="px-4 md:px-6 pb-6">
+            <label for="input" class="sr-only">Paste or type AI output</label>
+            <textarea id="input"
+              class="h-64 w-full resize-y rounded-xl border border-slate-300 dark:border-slate-700 bg-white/90 dark:bg-slate-950/40 p-3 outline-none focus:ring-2 focus:ring-brand-600 font-mono text-sm"
+              placeholder="Paste or type here..."
+              spellcheck="false"></textarea>
+          </div>
+          <div class="px-4 md:px-6 pb-6 flex items-center gap-3">
+            <button id="clearBtn" class="text-sm px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95 transition">
+              Clear
+            </button>
+          </div>
+        </section>
+
+        <!-- Output card -->
+        <section class="relative rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/60 shadow-soft">
+          <div class="p-4 md:p-6 flex items-center justify-between">
+            <h2 class="text-base font-medium">Output</h2>
+            <div class="flex items-center gap-3">
+              <span id="outChars" class="text-xs text-slate-500 dark:text-slate-400">0 chars</span>
+              <button id="copyBtn" class="text-sm px-3 py-1.5 rounded-lg bg-brand-600 text-white hover:bg-brand-700 active:scale-95 transition">
+                Copy
+              </button>
+            </div>
+          </div>
+          <div class="px-4 md:px-6 pb-6">
+            <pre id="output"
+                 class="h-64 w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white/90 dark:bg-slate-950/40 p-3 overflow-auto whitespace-pre-wrap break-words font-mono text-sm transition-opacity"
+                 aria-live="polite"></pre>
+          </div>
+        </section>
+      </div>
+
+      <!-- Helper line -->
+      <p class="mt-6 text-xs text-slate-500 dark:text-slate-400">
+        Tip: if you still see odd spacing, it may be zero width spaces. The normalizer removes those by default.
+      </p>
+    </main>
+  </div>
+
+  <!-- App script -->
+  <script type="module">
+    // Import your normalization function
+ function normalizePunctuation(text) {
+  const replacements = {
+    "—": "-", "–": "-", "‒": "-", "―": "-", "‐": "-",
+    "“": '"', "”": '"', "„": '"', "«": '"', "»": '"',
+    "‘": "'", "’": "'", "‚": "'", "‹": "'", "›": "'",
+    "…": "...",
+    "\u00A0": " ", "\u2002": " ", "\u2003": " ", "\u2009": " ",
+    "\u200B": "", "\u202F": " ", "\u3000": " "
+  };
+  const pattern = new RegExp("[" + Object.keys(replacements).join("") + "]", "g");
+  return text.replace(pattern, m => replacements[m] || m);
+}
+    const $ = (id) => document.getElementById(id);
+    const input = $("input");
+    const output = $("output");
+    const inChars = $("inChars");
+    const outChars = $("outChars");
+    const copyBtn = $("copyBtn");
+    const clearBtn = $("clearBtn");
+    const themeBtn = $("themeBtn");
+
+    function render() {
+      const raw = input.value;
+      const normalized = normalizePunctuation(raw);
+      // Light fade effect for updates
+      output.style.opacity = "0.85";
+      output.textContent = normalized;
+      requestAnimationFrame(() => {
+        setTimeout(() => { output.style.opacity = "1"; }, 60);
+      });
+      inChars.textContent = `${raw.length} chars`;
+      outChars.textContent = `${normalized.length} chars`;
+    }
+
+    input.addEventListener("input", render);
+
+    copyBtn.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(output.textContent);
+        const prev = copyBtn.textContent;
+        copyBtn.textContent = "Copied";
+        setTimeout(() => (copyBtn.textContent = prev), 1200);
+      } catch {
+        const prev = copyBtn.textContent;
+        copyBtn.textContent = "Copy failed";
+        setTimeout(() => (copyBtn.textContent = prev), 1200);
+      }
+    });
+
+    clearBtn.addEventListener("click", () => {
+      input.value = "";
+      render();
+      input.focus();
+    });
+
+    themeBtn.addEventListener("click", () => {
+      document.documentElement.classList.toggle("dark");
+    });
+
+    // Initial render
+    render();
+  </script>
+</body>
+</html>
