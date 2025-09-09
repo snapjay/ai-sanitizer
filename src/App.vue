@@ -8,7 +8,7 @@ const output = computed(() => normalizePunctuation(input.value));
 
 const copyText = async () => {
   try {
-    await navigator.clipboard.writeText(normalizePunctuation(input.value));
+    await navigator.clipboard.writeText(normalizePunctuation(input.value).normalized);
     return true;
   } catch {
     return false;
