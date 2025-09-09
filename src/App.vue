@@ -89,7 +89,11 @@ const copyText = async () => {
           <div class="px-4 md:px-6 pb-6">
             <pre id="output"
               class="h-64 w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white/90 dark:bg-slate-950/40 p-3 overflow-auto whitespace-pre-wrap break-words font-mono text-sm transition-opacity"
-              aria-live="polite" v-text="output"></pre>
+              aria-live="polite" v-text="output.normalized"></pre>
+          </div>
+          <div class="px-4 md:px-6 pb-6 flex items-center gap-3 justify-end">
+             <span id="inChars" class="text-xs dark:text-slate-400">Characters replaced:</span>
+             <span id="inChars" class="text-xs text-slate-500 dark:text-slate-400">{{ output.changes }} chars</span>
           </div>
         </section>
       </div>
